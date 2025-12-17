@@ -1,18 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
-  <PropertyGroup>
-    <TargetFramework>net9.0-browser</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0-browser</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <WasmBuildNative>true</WasmBuildNative>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Browser" />
-    <PackageReference Include="ReactiveDomain" />
-    <PackageReference Include="System.Private.Uri" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Browser" />
+        <PackageReference Include="ReactiveDomain" />
+        <PackageReference Include="System.Private.Uri" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ProcessManagerViewer\ProcessManagerViewer.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ProcessManagerViewer\ProcessManagerViewer.csproj" />
+    </ItemGroup>
 </Project>

@@ -2,6 +2,8 @@ using System;
 
 using Avalonia;
 
+using ReactiveUI.Avalonia;
+
 namespace ProcessManagerViewer.Desktop;
 
 sealed class Program {
@@ -17,5 +19,6 @@ sealed class Program {
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToTrace()
+            .UseReactiveUI();
 }

@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Reflection;
 
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -8,10 +9,17 @@ using Avalonia.Markup.Xaml;
 using ProcessManagerViewer.ViewModels;
 using ProcessManagerViewer.Views;
 
+using ReactiveUI;
+
+using Splat;
+
 namespace ProcessManagerViewer;
 
 public partial class App : Application {
     public override void Initialize() {
+        Locator.CurrentMutable.RegisterViewsForViewModels(Assembly.GetExecutingAssembly());
+        Locator.CurrentMutable.RegisterLazySingleton(() => new ViewLocator(), typeof(IViewLocator));
+
         AvaloniaXamlLoader.Load(this);
     }
 
