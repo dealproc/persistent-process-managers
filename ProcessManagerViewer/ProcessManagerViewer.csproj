@@ -19,6 +19,7 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="ReactiveDomain" />
     <PackageReference Include="ReactiveUI" />
     <PackageReference Include="ReactiveUI.Avalonia" />
@@ -27,5 +28,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.Private.Uri" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ReactiveDomainExt\" />
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@
     <PackageVersion Include="Avalonia.Browser" Version="11.3.9" />
     <PackageVersion Include="Avalonia.Android" Version="11.3.9" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
     <PackageVersion Include="ReactiveDomain" Version="0.11.0" />
     <PackageVersion Include="ReactiveUI" Version="22.3.1" />
     <PackageVersion Include="ReactiveUI.Avalonia" Version="11.3.8" />
