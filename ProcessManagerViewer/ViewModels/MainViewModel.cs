@@ -1,8 +1,8 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using ReactiveUI.SourceGenerators;
 
 namespace ProcessManagerViewer.ViewModels;
 
 public partial class MainViewModel : ViewModelBase {
-    [ObservableProperty]
+    [Reactive]
     private string _greeting = "Welcome to Avalonia!";
 }

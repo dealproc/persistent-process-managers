@@ -1,10 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-using Avalonia.Controls;
-using Avalonia.Controls.Templates;
-
-using ProcessManagerViewer.ViewModels;
+using ReactiveUI;
 
 namespace ProcessManagerViewer;
 
@@ -14,22 +11,24 @@ namespace ProcessManagerViewer;
 [RequiresUnreferencedCode(
     "Default implementation of ViewLocator involves reflection which may be trimmed away.",
     Url = "https://docs.avaloniaui.net/docs/concepts/view-locator")]
-public class ViewLocator : IDataTemplate {
-    public Control? Build(object? param) {
-        if (param is null)
+public class ViewLocator : IViewLocator {
+    /// </inheritdoc>
+    public IViewFor? ResolveView<T>(T? viewModel, string? contract = null) {
+        if (viewModel is null) {
             return null;
-
-        var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
-        var type = Type.GetType(name);
-
-        if (type != null) {
-            return (Control)Activator.CreateInstance(type)!;
         }
 
-        return new TextBlock { Text = "Not Found: " + name };
-    }
+        var name = viewModel.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
+        var type = Type.GetType(name);
 
-    public bool Match(object? data) {
-        return data is ViewModelBase;
+        if (type is null) {
+            return new Views.ViewNotFoundView {
+                DataContext = new ViewModels.ViewNotFoundViewModel($"View not found: {name}")
+            };
+        }
+
+        var control = (IViewFor)Activator.CreateInstance(type)!;
+        control.ViewModel = viewModel;
+        return control;
     }
 }
