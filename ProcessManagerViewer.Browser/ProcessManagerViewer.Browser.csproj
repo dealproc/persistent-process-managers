@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
+    <PackageReference Include="ReactiveDomain" />
+    <PackageReference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>
