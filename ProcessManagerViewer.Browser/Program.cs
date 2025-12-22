@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-
 using Avalonia;
 using Avalonia.Browser;
 
@@ -7,12 +5,7 @@ using ProcessManagerViewer;
 
 using ReactiveUI.Avalonia;
 
-internal sealed partial class Program {
-    private static Task Main(string[] args) => BuildAvaloniaApp()
-            .WithInterFont()
-            .StartBrowserAppAsync("out");
-
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
-            .UseReactiveUI();
-}
+await AppBuilder.Configure<App>()
+    .UseReactiveUI()
+    .WithInterFont()
+    .StartBrowserAppAsync("out");

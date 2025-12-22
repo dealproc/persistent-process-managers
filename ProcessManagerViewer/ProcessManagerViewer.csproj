@@ -23,6 +23,7 @@
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
         <PackageReference Include="ReactiveDomain" />
         <PackageReference Include="ReactiveUI" />
@@ -33,7 +34,7 @@
         </PackageReference>
         <PackageReference Include="System.Private.Uri" />
         <PackageReference Include="Google.Protobuf" />
-        <PackageReference Include="Grpc.Tools" >
+        <PackageReference Include="Grpc.Tools">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -42,5 +43,9 @@
     <ItemGroup>
         <Folder Include="Storage\" />
         <Folder Include="ReactiveDomainExt\" />
+        <Folder Include="ViewModels\CrmAppViewModels\" />
+        <Folder Include="ViewModels\ErpAppViewModels\" />
+        <Folder Include="ViewModels\ProcessManagersViewModels\" />
+        <Folder Include="ViewModels\ThisAppViewModels\" />
     </ItemGroup>
 </Project>
