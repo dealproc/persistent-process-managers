@@ -29,6 +29,15 @@ public static partial class AddContactMsgs {
         }
     }
 
+    public class ThisAppCreated : Event {
+        public readonly Guid AddContactId;
+
+        public ThisAppCreated(
+            Guid addContactId) {
+            AddContactId = addContactId;
+        }
+    }
+
     public class CrmContactCreated : Event {
         public readonly Guid AddContactId;
 

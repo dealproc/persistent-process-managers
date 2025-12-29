@@ -5,7 +5,8 @@ using ReactiveDomain.Messaging;
 
 namespace ProcessManagerViewer.Domains.ThisApp;
 
-internal class AddContact : PersistentProcessManager {
+internal class AddContact : PmProcessManager {
+    private bool _inApp = false;
     private bool _inErp = false;
     private bool _inCrm = false;
 
@@ -29,6 +30,12 @@ internal class AddContact : PersistentProcessManager {
             firstName,
             lastName,
             email));
+        Raise(new ContactMsgs.CreateContact(
+            contactId,
+            xrefId,
+            firstName,
+            lastName,
+            email));
         Raise(new AclRequests.CreateCrmContactReq(
             xrefId,
             firstName,
@@ -47,17 +54,26 @@ internal class AddContact : PersistentProcessManager {
 
     private void RegisterEvents() {
         Register<AddContactMsgs.Started>(Apply);
+        Register<AddContactMsgs.ThisAppCreated>(Apply);
         Register<AddContactMsgs.CrmContactCreated>(Apply);
         Register<AddContactMsgs.ErpContactCreated>(Apply);
         Register<AddContactMsgs.Completed>(Apply);
     }
 
-    public override void Handle(IMessage message) {
+    public override void Timeout(int retryCount) {
+        throw new NotImplementedException();
+    }
+
+    protected override void OnHandle(IMessage message) {
         if (IsCompleted) {
             return;
         }
 
         switch (message) {
+            case ContactMsgs.ContactCreated:
+                Raise(new AddContactMsgs.ThisAppCreated(
+                    Id));
+                break;
             case AclRequests.CreateCrmContactResp resp:
                 Raise(new AddContactMsgs.CrmContactCreated(
                     Id));
@@ -78,7 +94,7 @@ internal class AddContact : PersistentProcessManager {
             return;
         }
 
-        if (_inCrm && _inErp) {
+        if (_inApp && _inCrm && _inErp) {
             Raise(new AddContactMsgs.Completed(
                 Id));
         }
@@ -86,6 +102,10 @@ internal class AddContact : PersistentProcessManager {
 
     private void Apply(AddContactMsgs.Started msg) {
         Id = msg.AddContactId;
+    }
+
+    private void Apply(AddContactMsgs.ThisAppCreated _) {
+        _inApp = true;
     }
 
     private void Apply(AddContactMsgs.CrmContactCreated _) {
@@ -98,9 +118,5 @@ internal class AddContact : PersistentProcessManager {
 
     private void Apply(AddContactMsgs.Completed _) {
         IsCompleted = true;
-    }
-
-    public override void OnTimeout(int numberOfRetries, TimeProvider tp) {
-        throw new NotImplementedException();
     }
 }

@@ -16,6 +16,7 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" />
         <PackageReference Include="Avalonia.Themes.Fluent" />
         <PackageReference Include="Avalonia.Fonts.Inter" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -42,10 +43,6 @@
 
     <ItemGroup>
         <Folder Include="Storage\" />
-        <Folder Include="ReactiveDomainExt\" />
-        <Folder Include="ViewModels\CrmAppViewModels\" />
-        <Folder Include="ViewModels\ErpAppViewModels\" />
         <Folder Include="ViewModels\ProcessManagersViewModels\" />
-        <Folder Include="ViewModels\ThisAppViewModels\" />
     </ItemGroup>
 </Project>

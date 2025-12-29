@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:rxui="http://reactiveui.net"
+             xmlns:vm="using:ProcessManagerViewer.ViewModels.ThisAppViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ProcessManagerViewer.Views.ThisAppViews.ContactsListView"
+             x:DataType="vm:ContactsListViewModel">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Bottom">
+            <StackPanel DockPanel.Dock="Left"
+                        HorizontalAlignment="Left"
+                        Orientation="Horizontal">
+                <Button Content="Archive Contact"
+                        Command="{Binding ArchiveContactCommand}" />
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button Content="Edit"
+                        Command="{Binding EditContactCommand}" />
+                <Button Content="New"
+                        Command="{Binding CreateContactCommand}" />
+            </StackPanel>
+            <Panel />
+        </DockPanel>
+        <DataGrid ItemsSource="{Binding Contacts}"
+                  SelectedItem="{Binding SelectedContact}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" />
+                <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}" />
+                <DataGridTextColumn Header="Email" Binding="{Binding Email}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

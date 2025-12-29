@@ -1,19 +1,17 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
+using ReactiveDomain;
 using ReactiveDomain.Foundation;
 using ReactiveDomain.Messaging;
 using ReactiveDomain.Messaging.Bus;
 
 namespace ProcessManagerViewer.Domains.ErpApp;
 
-public class ContactService : ReadModelBase, IHostedLifecycleService,
+public class ContactService : ReadModelBase, IReactiveDomainService,
     IHandle<AclRequests.CreateErpContactReq>,
     IHandleCommand<ContactMsgs.CreateContact>,
     IHandle<ContactMsgs.ContactCreated>,
@@ -32,6 +30,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     private readonly ContactLookup _lookup;
     private readonly ICorrelatedRepository _repository;
     private readonly CompositeDisposable _disposables = [];
+    private bool _hasBeenStarted = false;
+    private bool _hasBeenDisposed = false;
 
     public ContactService(
         [FromKeyedServices(Keys.ThisApp)]
@@ -44,7 +44,9 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         [FromKeyedServices(Keys.Erp)]
         ICommandPublisher commandPublisher,
 
+        [FromKeyedServices(Keys.Erp)]
         ContactLookup lookup,
+
         ICorrelatedRepository repository,
         IConfiguredConnection connection) : base(
             nameof(ContactService),
@@ -56,6 +58,12 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         _commandSubscriber = commandSubscriber;
         _lookup = lookup;
         _repository = repository;
+    }
+
+    public void StartService() {
+        if (_hasBeenStarted) {
+            return;
+        }
 
         _fromExternalApp.Subscribe<AclRequests.CreateErpContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.CreateContact>(this).DisposeWith(_disposables);
@@ -68,6 +76,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         _fromExternalApp.Subscribe<AclRequests.ArchiveErpContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.ArchiveContact>(this).DisposeWith(_disposables);
         EventStream.Subscribe<ContactMsgs.Archived>(this).DisposeWith(_disposables);
+
+        Start<Contact>(checkpoint: long.MaxValue - 1);
     }
 
     public void Handle(AclRequests.CreateErpContactReq message) {
@@ -209,34 +219,13 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         _toExternalApp.Publish(resp);
     }
 
-    /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
+    protected override void Dispose(bool disposing) {
+        base.Dispose(disposing);
 
-    /// <inheritdoc />
-    public Task StartedAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
+        if (!disposing || _hasBeenDisposed) {
+            return;
+        }
 
-    /// <inheritdoc />
-    public Task StartingAsync(CancellationToken cancellationToken) {
-        Start<Contact>(checkpoint: long.MaxValue - 1);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task StoppedAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task StoppingAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
+        _disposables?.Dispose();
     }
 }

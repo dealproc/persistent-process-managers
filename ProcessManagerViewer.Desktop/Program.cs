@@ -9,16 +9,15 @@ using ReactiveDomain;
 using ReactiveUI.Avalonia;
 
 var collection = new ServiceCollection();
-collection.AddSingleton<IStreamStoreConnection>((_) => new ProcessManagerViewer.Storage.DataStore("desktop-store"));
-collection.AddProcessManagerServices();
+collection.AddSingleton<IStreamStoreConnection>((_) => {
+    var store = new ProcessManagerViewer.Storage.DataStore("desktop-store");
+    store.Connect();
+    return store;
+});
 
-// configure desktop-specific services.
-
-var services = collection.BuildServiceProvider();
-
-AppBuilder.Configure<App>()
+AppBuilder.Configure(() => new App(collection))
     .UsePlatformDetect()
     .WithInterFont()
-    .LogToTrace()
+    //.LogToTrace()
     .UseReactiveUI()
     .StartWithClassicDesktopLifetime(args);

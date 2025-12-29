@@ -1,19 +1,20 @@
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Threading;
-using System.Threading.Tasks;
+
+using Google.Protobuf;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
+using ReactiveDomain;
 using ReactiveDomain.Foundation;
 using ReactiveDomain.Messaging;
 using ReactiveDomain.Messaging.Bus;
 
 namespace ProcessManagerViewer.Domains.CrmApp;
 
-public class ContactService : ReadModelBase, IHostedLifecycleService,
+public class ContactService : ReadModelBase, IReactiveDomainService,
     IHandle<AclRequests.CreateCrmContactReq>,
     IHandleCommand<ContactMsgs.CreateContact>,
     IHandle<ContactMsgs.ContactCreated>,
@@ -31,7 +32,10 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     private readonly ICommandPublisher _commandPublisher;
     private readonly ContactLookup _lookup;
     private readonly ICorrelatedRepository _repository;
+    private readonly ILogger _log;
     private readonly CompositeDisposable _disposables = [];
+    private bool _hasBeenStarted = false;
+    private bool _hasBeenDisposed = false;
 
     public ContactService(
         [FromKeyedServices(Keys.ThisApp)]
@@ -44,8 +48,11 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         [FromKeyedServices(Keys.Crm)]
         ICommandPublisher commandPublisher,
 
+        [FromKeyedServices(Keys.Crm)]
         ContactLookup lookup,
+
         ICorrelatedRepository repository,
+        ILoggerFactory loggerFactory,
         IConfiguredConnection connection) : base(
             nameof(ContactService),
             connection) {
@@ -55,7 +62,17 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         _commandPublisher = commandPublisher;
         _commandSubscriber = commandSubscriber;
         _lookup = lookup;
+        _log = loggerFactory.CreateLogger<ContactService>();
         _repository = repository;
+    }
+
+    public void StartService() {
+        if (_hasBeenStarted) {
+            return;
+        }
+        _hasBeenStarted = true;
+
+        _log.LogDebug("Starting {@ServiceName}.", GetType().Name);
 
         _fromExternalApp.Subscribe<AclRequests.CreateCrmContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.CreateContact>(this).DisposeWith(_disposables);
@@ -68,9 +85,15 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         _fromExternalApp.Subscribe<AclRequests.ArchiveCrmContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.ArchiveContact>(this).DisposeWith(_disposables);
         EventStream.Subscribe<ContactMsgs.Archived>(this).DisposeWith(_disposables);
+
+        Start<Contact>(checkpoint: long.MaxValue - 1);
+
+        _log.LogDebug("{@ServiceName} started.", GetType().Name);
     }
 
     public void Handle(AclRequests.CreateCrmContactReq message) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+
         if (_lookup.TryToFind(message.XrefId, out _)) {
             var resp = MessageBuilder.From(message)
                 .Build(() => new AclRequests.CreateCrmContactResp(
@@ -103,6 +126,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public void Handle(ContactMsgs.ContactCreated message) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+
         if (!_lookup.TryToFind(message.ContactId, out var xrefId) ||
             xrefId is null) {
             return;
@@ -117,6 +142,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public void Handle(AclRequests.UpdateCrmContactDetailsReq message) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+
         if (!_lookup.TryToFind(message.XrefId, out var contactId)) {
             var resp = MessageBuilder.From(message)
                 .Build(() => new AclRequests.UpdateCrmContactDetailsResp(
@@ -136,6 +163,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public CommandResponse Handle(ContactMsgs.UpdateDetails command) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
+
         var contact = _repository.GetById<Contact>(command.ContactId, command);
         contact.UpdateDetails(
             command.FirstName,
@@ -156,6 +185,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public void Handle(ContactMsgs.DetailsUpdated message) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+
         if (!_lookup.TryToFind(message.ContactId, out var xrefId) ||
             xrefId is null) {
             return;
@@ -170,6 +201,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public void Handle(AclRequests.ArchiveCrmContactReq message) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+
         if (!_lookup.TryToFind(message.XrefId, out var contactId)) {
             var resp = MessageBuilder.From(message)
                 .Build(() => new AclRequests.ArchiveCrmContactResp(
@@ -185,6 +218,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public CommandResponse Handle(ContactMsgs.ArchiveContact command) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
+
         var contact = _repository.GetById<Contact>(command.ContactId, command);
         contact.Archive();
 
@@ -202,6 +237,8 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
     }
 
     public void Handle(ContactMsgs.Archived message) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+
         var resp = MessageBuilder.From(message)
             .Build(() => new AclRequests.ArchiveCrmContactResp(
                 _lookup.Lookup(message.ContactId),
@@ -209,34 +246,14 @@ public class ContactService : ReadModelBase, IHostedLifecycleService,
         _toExternalApp.Publish(resp);
     }
 
-    /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
+    protected override void Dispose(bool disposing) {
+        base.Dispose(disposing);
 
-    /// <inheritdoc />
-    public Task StartedAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
+        if (!disposing || _hasBeenDisposed) {
+            return;
+        }
+        _hasBeenDisposed = true;
 
-    /// <inheritdoc />
-    public Task StartingAsync(CancellationToken cancellationToken) {
-        Start<Contact>(checkpoint: long.MaxValue - 1);
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task StoppedAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public Task StoppingAsync(CancellationToken cancellationToken) {
-        return Task.CompletedTask;
+        _disposables?.Dispose();
     }
 }

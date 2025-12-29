@@ -5,7 +5,7 @@ using ReactiveDomain.Messaging;
 
 namespace ProcessManagerViewer.Domains.ThisApp;
 
-public class UpdateContactDetails : PersistentProcessManager {
+public class UpdateContactDetails : PmProcessManager {
     private bool _inErp = false;
     private bool _inCrm = false;
 
@@ -51,7 +51,11 @@ public class UpdateContactDetails : PersistentProcessManager {
         Register<UpdateContactDetailsMsgs.Completed>(Apply);
     }
 
-    public override void Handle(IMessage message) {
+    public override void Timeout(int retryCount) {
+        throw new NotImplementedException();
+    }
+
+    protected override void OnHandle(IMessage message) {
         if (IsCompleted) {
             return;
         }
@@ -81,10 +85,6 @@ public class UpdateContactDetails : PersistentProcessManager {
             Raise(new UpdateContactDetailsMsgs.Completed(
                 Id));
         }
-    }
-
-    public override void OnTimeout(int numberOfRetries, TimeProvider tp) {
-        throw new NotImplementedException();
     }
 
     private void Apply(UpdateContactDetailsMsgs.Started msg) {

@@ -11,7 +11,7 @@ public class ContactLookup : ReadModelBase,
     private Dictionary<Guid, string> _internalIdToXref = [];
     private Dictionary<string, Guid> _xrefToInternalId = [];
 
-    public ContactLookup(string name, IConfiguredConnection connection) : base(name, connection) {
+    public ContactLookup(IConfiguredConnection connection) : base($"ThisApp:{nameof(ContactLookup)}", connection) {
         EventStream.Subscribe<ContactMsgs.ContactCreated>(this);
 
         Start<Contact>();
@@ -27,4 +27,10 @@ public class ContactLookup : ReadModelBase,
 
     public Guid Lookup(string xrefId)
         => _xrefToInternalId[xrefId];
+
+    public bool TryToLookup(Guid contactId, out string? xrefId)
+        => _internalIdToXref.TryGetValue(contactId, out xrefId);
+
+    public bool TryToLookup(string xrefId, out Guid contactId)
+        => _xrefToInternalId.TryGetValue(xrefId, out contactId);
 }

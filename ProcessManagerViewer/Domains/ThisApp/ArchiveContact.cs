@@ -5,7 +5,7 @@ using ReactiveDomain.Messaging;
 
 namespace ProcessManagerViewer.Domains.ThisApp;
 
-public class ArchiveContact : PersistentProcessManager {
+public class ArchiveContact : PmProcessManager {
     private bool _inErp = false;
     private bool _inCrm = false;
 
@@ -20,8 +20,7 @@ public class ArchiveContact : PersistentProcessManager {
 
         Raise(new ArchiveContactMsgs.Started(
             archiveContactId,
-            contactId,
-            xrefId));
+            contactId));
         Raise(new AclRequests.ArchiveCrmContactReq(
             xrefId));
         Raise(new AclRequests.ArchiveErpContactReq(
@@ -39,7 +38,11 @@ public class ArchiveContact : PersistentProcessManager {
         Register<ArchiveContactMsgs.Completed>(Apply);
     }
 
-    public override void Handle(IMessage message) {
+    public override void Timeout(int retryCount) {
+        throw new NotImplementedException();
+    }
+
+    protected override void OnHandle(IMessage message) {
         if (IsCompleted) {
             return;
         }
@@ -69,10 +72,6 @@ public class ArchiveContact : PersistentProcessManager {
             Raise(new ArchiveContactMsgs.Completed(
                 Id));
         }
-    }
-
-    public override void OnTimeout(int numberOfRetries, TimeProvider tp) {
-        throw new NotImplementedException();
     }
 
     private void Apply(ArchiveContactMsgs.Started msg) {

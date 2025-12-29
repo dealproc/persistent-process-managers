@@ -11,7 +11,7 @@ public class ContactLookup : ReadModelBase,
     private Dictionary<Guid, string> _internalIdToXref = [];
     private Dictionary<string, Guid> _xrefToInternalId = [];
 
-    public ContactLookup(string name, IConfiguredConnection connection) : base(name, connection) {
+    public ContactLookup(IConfiguredConnection connection) : base($"CrmApp:{nameof(ContactLookup)}", connection) {
         EventStream.Subscribe<ContactMsgs.ContactCreated>(this);
 
         Start<Contact>();

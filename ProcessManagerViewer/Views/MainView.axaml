@@ -5,6 +5,7 @@
              xmlns:reactiveui="http://reactiveui.net"
              xmlns:v="using:ProcessManagerViewer.Views"
              xmlns:vm="using:ProcessManagerViewer.ViewModels"
+             xmlns:tav="using:ProcessManagerViewer.Views.ThisAppViews"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProcessManagerViewer.Views.MainView"
              x:DataType="vm:MainViewModel"
@@ -15,6 +16,22 @@
         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainViewModel />
     </Design.DataContext>
-    <v:CommandProducerView DataContext="{Binding CommandProducer}"
-                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+    <Grid RowDefinitions="*, 4, *"
+          ColumnDefinitions="*, 4, *">
+
+        <GridSplitter Grid.Row="0"
+                      Grid.RowSpan="3"
+                      Grid.Column="1"
+                      Background="Black" />
+
+        <GridSplitter Grid.Row="1"
+                      Grid.Column="2"
+                      Background="Black" />
+
+        <tav:ThisApplicationView DataContext="{Binding ThisApplication}"
+                                 Grid.Row="0"
+                                 Grid.RowSpan="3"/>
+
+    </Grid>
 </UserControl>

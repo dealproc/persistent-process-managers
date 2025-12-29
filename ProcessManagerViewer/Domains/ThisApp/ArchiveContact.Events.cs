@@ -8,15 +8,12 @@ public static partial class ArchiveContactMsgs {
     public class Started : Command {
         public readonly Guid ArchiveContactId;
         public readonly Guid ContactId;
-        public readonly string XrefId;
 
         public Started(
             Guid archiveContactId,
-            Guid contactId,
-            string xrefId) {
+            Guid contactId) {
             ArchiveContactId = archiveContactId;
             ContactId = contactId;
-            XrefId = xrefId;
         }
     }
 

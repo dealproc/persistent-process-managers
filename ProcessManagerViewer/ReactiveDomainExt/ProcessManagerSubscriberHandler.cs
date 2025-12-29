@@ -7,7 +7,7 @@ using ReactiveDomain.Messaging.Bus;
 namespace ReactiveDomain;
 
 class ProcessManagerSubscriberHanlder<TProcessManager, TEvent> : IHandleProcessManagerSubsriberHandler, IHandle<TEvent>
-	where TProcessManager : PersistentProcessManager, IHandle<IMessage>
+	where TProcessManager : PmProcessManager, IHandle<IMessage>
 	where TEvent : Event {
 	private readonly IConfiguredConnection _connection;
 	private readonly Func<TEvent, Guid> _getId;
