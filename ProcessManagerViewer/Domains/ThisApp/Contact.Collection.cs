@@ -65,7 +65,7 @@ public class ContactCollection : ReadModelBase,
     }
 }
 
-public partial class ContactRm : ReactiveObject {
+public partial class ContactRm : ReactiveObject, IContactRm {
     public Guid ContactId { get; init; }
 
     [Reactive]

@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="using:ProcessManagerViewer.Domains"
+                    xmlns:thisapp="using:ProcessManagerViewer.Domains.ThisApp">
+    <!-- Add Resources Here -->
+    <DataTemplate x:Key="ContactCard"
+                  x:DataType="d:IContactRm">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <TextBlock Text="{Binding FirstName}" />
+                <TextBlock Text="{Binding LastName}" />
+            </StackPanel>
+            <TextBlock Text="{Binding Email}" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

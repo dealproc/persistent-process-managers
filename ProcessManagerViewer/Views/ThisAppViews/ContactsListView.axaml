@@ -9,6 +9,7 @@
              x:Class="ProcessManagerViewer.Views.ThisAppViews.ContactsListView"
              x:DataType="vm:ContactsListViewModel">
     <DockPanel>
+        <TextBlock Text="This Application" DockPanel.Dock="Top" />
         <DockPanel DockPanel.Dock="Bottom">
             <StackPanel DockPanel.Dock="Left"
                         HorizontalAlignment="Left"
@@ -27,18 +28,7 @@
             <Panel />
         </DockPanel>
         <ListBox ItemsSource="{Binding Contacts}"
-                 SelectedItem="{Binding SelectedContact}">
-            <ListBox.DataTemplates>
-                <DataTemplate x:DataType="domain:ContactRm">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <TextBlock Text="{Binding FirstName}" />
-                            <TextBlock Text="{Binding LastName}" />
-                        </StackPanel>
-                        <TextBlock Text="{Binding Email}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.DataTemplates>
-        </ListBox>
+                 SelectedItem="{Binding SelectedContact}"
+                 ItemTemplate="{StaticResource ContactCard}" />
     </DockPanel>
 </UserControl>

@@ -64,7 +64,7 @@ public partial class ContactCollection : ReadModelBase,
         }
     }
 
-    public partial class ContactDetails : ReactiveObject {
+    public partial class ContactDetails : ReactiveObject, IContactRm {
         public Guid ContactId { get; init; }
         public string XrefId { get; init; }
 
