@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:rxui="http://reactiveui.net"
+             xmlns:domain="using:ProcessManagerViewer.Domains.ThisApp"
              xmlns:vm="using:ProcessManagerViewer.ViewModels.ThisAppViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProcessManagerViewer.Views.ThisAppViews.ContactsListView"
@@ -25,13 +26,19 @@
             </StackPanel>
             <Panel />
         </DockPanel>
-        <DataGrid ItemsSource="{Binding Contacts}"
-                  SelectedItem="{Binding SelectedContact}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" />
-                <DataGridTextColumn Header="Last Name" Binding="{Binding LastName}" />
-                <DataGridTextColumn Header="Email" Binding="{Binding Email}" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <ListBox ItemsSource="{Binding Contacts}"
+                 SelectedItem="{Binding SelectedContact}">
+            <ListBox.DataTemplates>
+                <DataTemplate x:DataType="domain:ContactRm">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <TextBlock Text="{Binding FirstName}" />
+                            <TextBlock Text="{Binding LastName}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Email}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.DataTemplates>
+        </ListBox>
     </DockPanel>
 </UserControl>

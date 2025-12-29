@@ -32,7 +32,7 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
     public ReadOnlyObservableCollection<ContactRm> Contacts => _contacts;
 
     [Reactive]
-    public ContactRm? SelectedContact { get; set; }
+    private ContactRm _selectedContact = null!;
 
     public ReactiveCommand<Unit, Unit> CreateContactCommand { get; init; }
 
@@ -79,8 +79,9 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
     }
 
     private void UpdateContact() {
-        var vm = _contactEditorViewModelFactory.CreateContact(
-            HostScreen);
+        var vm = _contactEditorViewModelFactory.EditContact(
+            HostScreen,
+            SelectedContact);
         HostScreen.Router.Navigate.Execute(vm);
     }
 
@@ -130,7 +131,7 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
 public interface IContactListViewModel : IRoutableViewModel, IDisposable {
     ReadOnlyObservableCollection<ContactRm> Contacts { get; }
 
-    ContactRm? SelectedContact { get; set; }
+    ContactRm SelectedContact { get; set; }
 
     ReactiveCommand<Unit, Unit> CreateContactCommand { get; init; }
 

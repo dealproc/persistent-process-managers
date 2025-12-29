@@ -28,6 +28,11 @@ public class UpdateContactDetails : PmProcessManager {
             firstName,
             lastName,
             email));
+        Raise(new ContactMsgs.UpdateDetails(
+            contactId,
+            firstName,
+            lastName,
+            email));
         Raise(new AclRequests.UpdateCrmContactDetailsReq(
             xrefId,
             firstName,

@@ -58,14 +58,20 @@ public class UpdateContactDetailsService : ReactiveDomainServiceBase,
             return command.Fail(new InvalidOperationException("Contact xref value could not be found."));
         }
 
-        _repository.Save(new UpdateContactDetails(
-            command.UpdateContactDetailsId,
-            command.ContactId,
-            xref,
-            command.FirstName,
-            command.LastName,
-            command.Email,
-            command));
-        return command.Succeed();
+        try {
+            var ucd = new UpdateContactDetails(
+                command.UpdateContactDetailsId,
+                command.ContactId,
+                xref,
+                command.FirstName,
+                command.LastName,
+                command.Email,
+                command);
+            _repository.Save(ucd);
+            return command.Succeed();
+        }
+        catch (Exception exc) {
+            return command.Fail(exc);
+        }
     }
 }
