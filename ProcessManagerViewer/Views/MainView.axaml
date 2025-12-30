@@ -5,6 +5,8 @@
              xmlns:reactiveui="http://reactiveui.net"
              xmlns:v="using:ProcessManagerViewer.Views"
              xmlns:vm="using:ProcessManagerViewer.ViewModels"
+             xmlns:cav="using:ProcessManagerViewer.Views.CrmAppViews"
+             xmlns:eav="using:ProcessManagerViewer.Views.ErpAppViews"
              xmlns:tav="using:ProcessManagerViewer.Views.ThisAppViews"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProcessManagerViewer.Views.MainView"
@@ -33,5 +35,12 @@
                                  Grid.Row="0"
                                  Grid.RowSpan="3"/>
 
+        <cav:CrmApplicationView DataContext="{Binding CrmApplication}"
+                                Grid.Row="0"
+                                Grid.Column="2"/>
+
+        <eav:ErpAppView DataContext="{Binding ErpApplication}"
+                        Grid.Row="2"
+                        Grid.Column="2"/>
     </Grid>
 </UserControl>

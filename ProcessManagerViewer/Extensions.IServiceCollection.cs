@@ -59,7 +59,7 @@ public static class Extensions {
         services.AddKeyedSingleton<ICommandSubscriber>(Keys.ThisApp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.ThisApp));
         services.AddKeyedSingleton<IPublisher>(Keys.ThisApp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.ThisApp));
         services.AddKeyedSingleton<ICommandPublisher>(Keys.ThisApp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.ThisApp));
-        services.AddKeyedSingleton(Keys.ThisApp, (provider, _) => new Domains.ThisApp.ContactCollection(provider.GetRequiredService<IConfiguredConnection>()));
+        services.AddSingleton((provider) => new Domains.ThisApp.ContactCollection(provider.GetRequiredService<IConfiguredConnection>()));
         services.AddReactiveDomainService<Domains.ThisApp.ContactService>();
         services.AddReactiveDomainService<Domains.ThisApp.AddContactService>();
         services.AddReactiveDomainService<Domains.ThisApp.UpdateContactDetailsService>();
@@ -74,17 +74,18 @@ public static class Extensions {
         services.AddKeyedSingleton<ICommandSubscriber>(Keys.Crm, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Crm));
         services.AddKeyedSingleton<IPublisher>(Keys.Crm, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Crm));
         services.AddKeyedSingleton<ICommandPublisher>(Keys.Crm, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Crm));
-        services.AddKeyedSingleton(Keys.Crm, (provider, _) => new Domains.CrmApp.ContactCollection(provider.GetRequiredService<IConfiguredConnection>()));
+        services.AddSingleton((provider) => new Domains.CrmApp.ContactCollection(provider.GetRequiredService<IConfiguredConnection>()));
         services.AddReactiveDomainService<Domains.CrmApp.ContactService>();
         services.AddKeyedSingleton<Domains.CrmApp.ContactLookup>(Keys.Crm);
         services.AddSingleton<ViewModels.CrmAppViewModels.ICrmApplicationViewModelFactory, ViewModels.CrmAppViewModels.CrmApplicationViewModel.Factory>();
+        services.AddSingleton<ViewModels.CrmAppViewModels.IContactListViewModelFactory, ViewModels.CrmAppViewModels.ContactListViewModel.Factory>();
 
         services.AddKeyedSingleton<IDispatcher>(Keys.Erp, (provider, _) => new Dispatcher($"{Keys.Erp} subsystem."));
         services.AddKeyedSingleton<ISubscriber>(Keys.Erp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Erp));
         services.AddKeyedSingleton<ICommandSubscriber>(Keys.Erp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Erp));
         services.AddKeyedSingleton<IPublisher>(Keys.Erp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Erp));
         services.AddKeyedSingleton<ICommandPublisher>(Keys.Erp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Erp));
-        services.AddKeyedSingleton(Keys.Erp, (provider, _) => new Domains.ErpApp.ContactCollection(provider.GetRequiredService<IConfiguredConnection>()));
+        services.AddSingleton((provider) => new Domains.ErpApp.ContactCollection(provider.GetRequiredService<IConfiguredConnection>()));
         services.AddReactiveDomainService<Domains.ErpApp.ContactService>();
         services.AddKeyedSingleton<Domains.ErpApp.ContactLookup>(Keys.Erp);
         services.AddSingleton<ViewModels.ErpAppViewModels.IErpApplicationViewModelFactory, ViewModels.ErpAppViewModels.ErpApplicationViewModel.Factory>();

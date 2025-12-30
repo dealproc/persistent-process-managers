@@ -60,7 +60,7 @@ public class UpdateContactDetailsService : ReactiveDomainServiceBase,
 
         try {
             var ucd = new UpdateContactDetails(
-                command.UpdateContactDetailsId,
+                Guid.NewGuid(),
                 command.ContactId,
                 xref,
                 command.FirstName,

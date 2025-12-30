@@ -37,7 +37,6 @@ public sealed partial class ErpApplicationViewModel : ReactiveObject, IErpApplic
         private readonly ContactCollection _contacts;
 
         public Factory(
-            [FromKeyedServices(Keys.Erp)]
             ContactCollection contacts) {
             _contacts = contacts;
         }

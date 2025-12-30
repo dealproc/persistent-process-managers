@@ -3,7 +3,7 @@ using ReactiveDomain.Messaging;
 namespace ProcessManagerViewer.Domains;
 
 public static partial class AclRequests {
-    public class CreateCrmContactReq : Event {
+    public class CreateCrmContactReq : Command {
         public readonly string XrefId;
         public readonly string FirstName;
         public readonly string LastName;
@@ -33,7 +33,7 @@ public static partial class AclRequests {
         }
     }
 
-    public class CreateErpContactReq : Event {
+    public class CreateErpContactReq : Command {
         public readonly string XrefId;
         public readonly string FirstName;
         public readonly string LastName;
@@ -63,7 +63,7 @@ public static partial class AclRequests {
         }
     }
 
-    public class ArchiveCrmContactReq : Event {
+    public class ArchiveCrmContactReq : Command {
         public readonly string XrefId;
 
         public ArchiveCrmContactReq(
@@ -84,7 +84,7 @@ public static partial class AclRequests {
         }
     }
 
-    public class ArchiveErpContactReq : Event {
+    public class ArchiveErpContactReq : Command {
         public readonly string XrefId;
 
         public ArchiveErpContactReq(
@@ -105,7 +105,7 @@ public static partial class AclRequests {
         }
     }
 
-    public class UpdateErpContactDetailsReq : Event {
+    public class UpdateErpContactDetailsReq : Command {
         public readonly string XrefId;
         public readonly string FirstName;
         public readonly string LastName;
@@ -135,7 +135,7 @@ public static partial class AclRequests {
         }
     }
 
-    public class UpdateCrmContactDetailsReq : Event {
+    public class UpdateCrmContactDetailsReq : Command {
         public readonly string XrefId;
         public readonly string FirstName;
         public readonly string LastName;

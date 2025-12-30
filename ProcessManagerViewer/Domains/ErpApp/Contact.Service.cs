@@ -12,18 +12,18 @@ using ReactiveDomain.Messaging.Bus;
 namespace ProcessManagerViewer.Domains.ErpApp;
 
 public class ContactService : ReadModelBase, IReactiveDomainService,
-    IHandle<AclRequests.CreateErpContactReq>,
+    IHandleCommand<AclRequests.CreateErpContactReq>,
     IHandleCommand<ContactMsgs.CreateContact>,
     IHandle<ContactMsgs.ContactCreated>,
 
-    IHandle<AclRequests.UpdateErpContactDetailsReq>,
+    IHandleCommand<AclRequests.UpdateErpContactDetailsReq>,
     IHandleCommand<ContactMsgs.UpdateDetails>,
     IHandle<ContactMsgs.DetailsUpdated>,
 
-    IHandle<AclRequests.ArchiveErpContactReq>,
+    IHandleCommand<AclRequests.ArchiveErpContactReq>,
     IHandleCommand<ContactMsgs.ArchiveContact>,
     IHandle<ContactMsgs.Archived> {
-    private readonly ISubscriber _fromExternalApp;
+    private readonly ICommandSubscriber _fromExternalAppCommandSubscriber;
     private readonly IPublisher _toExternalApp;
     private readonly ICommandSubscriber _commandSubscriber;
     private readonly ICommandPublisher _commandPublisher;
@@ -35,7 +35,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
 
     public ContactService(
         [FromKeyedServices(Keys.ThisApp)]
-        ISubscriber fromExternalApp,
+        ICommandSubscriber fromExternalAppCommandSubscriber,
         [FromKeyedServices(Keys.ThisApp)]
         IPublisher toExternalApp,
 
@@ -52,7 +52,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             nameof(ContactService),
             connection) {
 
-        _fromExternalApp = fromExternalApp;
+        _fromExternalAppCommandSubscriber = fromExternalAppCommandSubscriber;
         _toExternalApp = toExternalApp;
         _commandPublisher = commandPublisher;
         _commandSubscriber = commandSubscriber;
@@ -65,39 +65,43 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             return;
         }
 
-        _fromExternalApp.Subscribe<AclRequests.CreateErpContactReq>(this).DisposeWith(_disposables);
+        _fromExternalAppCommandSubscriber.Subscribe<AclRequests.CreateErpContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.CreateContact>(this).DisposeWith(_disposables);
         EventStream.Subscribe<ContactMsgs.ContactCreated>(this).DisposeWith(_disposables);
 
-        _fromExternalApp.Subscribe<AclRequests.UpdateErpContactDetailsReq>(this).DisposeWith(_disposables);
+        _fromExternalAppCommandSubscriber.Subscribe<AclRequests.UpdateErpContactDetailsReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.UpdateDetails>(this).DisposeWith(_disposables);
         EventStream.Subscribe<ContactMsgs.DetailsUpdated>(this).DisposeWith(_disposables);
 
-        _fromExternalApp.Subscribe<AclRequests.ArchiveErpContactReq>(this).DisposeWith(_disposables);
+        _fromExternalAppCommandSubscriber.Subscribe<AclRequests.ArchiveErpContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.ArchiveContact>(this).DisposeWith(_disposables);
         EventStream.Subscribe<ContactMsgs.Archived>(this).DisposeWith(_disposables);
 
         Start<Contact>(checkpoint: long.MaxValue - 1);
     }
 
-    public void Handle(AclRequests.CreateErpContactReq message) {
-        if (_lookup.TryToFind(message.XrefId, out _)) {
-            var resp = MessageBuilder.From(message)
+    public CommandResponse Handle(AclRequests.CreateErpContactReq command) {
+        if (_lookup.TryToFind(command.XrefId, out _)) {
+            var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.CreateCrmContactResp(
-                    message.XrefId,
+                    command.XrefId,
                     true));
             _toExternalApp.Publish(resp);
-            return;
+            return command.Succeed();
         }
 
-        var cmd = MessageBuilder.From(message)
+        var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.CreateContact(
                 Guid.NewGuid(),
-                message.XrefId,
-                message.FirstName,
-                message.LastName,
-                message.Email));
-        _commandPublisher.Send(cmd);
+                command.XrefId,
+                command.FirstName,
+                command.LastName,
+                command.Email));
+
+        var succeeded = _commandPublisher.TrySendAsync(cmd);
+        return succeeded
+            ? command.Succeed()
+            : command.Fail();
     }
 
     public CommandResponse Handle(ContactMsgs.CreateContact command) {
@@ -126,23 +130,26 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         _toExternalApp.Publish(resp);
     }
 
-    public void Handle(AclRequests.UpdateErpContactDetailsReq message) {
-        if (!_lookup.TryToFind(message.XrefId, out var contactId)) {
-            var resp = MessageBuilder.From(message)
+    public CommandResponse Handle(AclRequests.UpdateErpContactDetailsReq command) {
+        if (!_lookup.TryToFind(command.XrefId, out var contactId)) {
+            var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.UpdateErpContactDetailsResp(
-                    message.XrefId,
+                    command.XrefId,
                     false));
-            return;
+            return command.Succeed();
         }
 
-        var cmd = MessageBuilder.From(message)
+        var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.UpdateDetails(
                 contactId,
-                message.FirstName,
-                message.LastName,
-                message.Email));
+                command.FirstName,
+                command.LastName,
+                command.Email));
 
-        _commandPublisher.Send(cmd);
+        var succeeded = _commandPublisher.TrySendAsync(cmd);
+        return succeeded
+            ? command.Succeed()
+            : command.Fail();
     }
 
     public CommandResponse Handle(ContactMsgs.UpdateDetails command) {
@@ -179,19 +186,23 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         _toExternalApp.Publish(resp);
     }
 
-    public void Handle(AclRequests.ArchiveErpContactReq message) {
-        if (!_lookup.TryToFind(message.XrefId, out var contactId)) {
-            var resp = MessageBuilder.From(message)
+    public CommandResponse Handle(AclRequests.ArchiveErpContactReq command) {
+        if (!_lookup.TryToFind(command.XrefId, out var contactId)) {
+            var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.ArchiveErpContactResp(
-                    message.XrefId,
+                    command.XrefId,
                     false));
-            return;
+            return command.Succeed();
         }
 
-        var cmd = MessageBuilder.From(message)
+        var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.ArchiveContact(
                 contactId));
-        _commandPublisher.Send(cmd);
+
+        var succeeded = _commandPublisher.TrySendAsync(cmd);
+        return succeeded
+            ? command.Succeed()
+            : command.Fail();
     }
 
     public CommandResponse Handle(ContactMsgs.ArchiveContact command) {

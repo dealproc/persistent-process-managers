@@ -1,15 +1,4 @@
-using System;
-using System.Collections.ObjectModel;
 using System.Reactive.Disposables;
-using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
-
-using DynamicData;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using ProcessManagerViewer.Domains;
-using ProcessManagerViewer.Domains.CrmApp;
 
 using ReactiveUI;
 
@@ -17,28 +6,26 @@ namespace ProcessManagerViewer.ViewModels.CrmAppViewModels;
 
 public sealed class CrmApplicationViewModel : ViewModelBase, ICrmApplicationViewModel {
     private readonly CompositeDisposable _d = [];
-    private ReadOnlyObservableCollection<ContactCollection.ContactDetails> _contacts;
-    public ReadOnlyObservableCollection<ContactCollection.ContactDetails> Contacts => _contacts;
 
-    private CrmApplicationViewModel(ContactCollection contacts) {
-        contacts.Connect()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Bind(out _contacts)
-            .Subscribe().DisposeWith(_d);
+    public RoutingState Router { get; } = new();
+
+    private CrmApplicationViewModel(
+        IContactListViewModelFactory contactListViewModelFactory) {
+        var vm = contactListViewModelFactory.Create(this);
+        Router.NavigateAndReset.Execute(vm);
     }
 
 
     public class Factory : ICrmApplicationViewModelFactory {
-        private readonly ContactCollection _collection;
+        private readonly IContactListViewModelFactory _listViewModelFactory;
 
         public Factory(
-            [FromKeyedServices(Keys.Crm)]
-            ContactCollection collection) {
-            _collection = collection;
+            IContactListViewModelFactory listViewModelFactory) {
+            _listViewModelFactory = listViewModelFactory;
         }
 
         public ICrmApplicationViewModel Create() {
-            return new CrmApplicationViewModel(_collection);
+            return new CrmApplicationViewModel(_listViewModelFactory);
         }
     }
 
@@ -47,8 +34,7 @@ public sealed class CrmApplicationViewModel : ViewModelBase, ICrmApplicationView
     }
 }
 
-public interface ICrmApplicationViewModel : IDisposable {
-    ReadOnlyObservableCollection<ContactCollection.ContactDetails> Contacts { get; }
+public interface ICrmApplicationViewModel : IScreen {
 }
 
 public interface ICrmApplicationViewModelFactory {

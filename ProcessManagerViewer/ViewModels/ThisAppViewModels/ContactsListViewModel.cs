@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 
 using DynamicData;
@@ -50,7 +51,6 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
         ICommandPublisher commandPublisher,
         IScreen hostScreen,
 
-        [FromKeyedServices(Keys.ThisApp)]
         ContactCollection contacts,
 
         IContactEditorViewModelFactory contactEditorViewModelFactory) {
@@ -92,7 +92,7 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
 
         if (!_commandPublisher.TrySend(cmd, out var response)) {
             var msg = (response as Fail)?.Exception.Message ?? "Unknown failure. Check logs";
-            await ShowErrorMessage.Handle(msg);
+            await ShowErrorMessage.Handle(msg).ToTask();
         }
     }
 
@@ -109,7 +109,6 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
             [FromKeyedServices(Keys.ThisApp)]
             ICommandPublisher commandPublisher,
 
-            [FromKeyedServices(Keys.ThisApp)]
             ContactCollection contacts,
 
             IContactEditorViewModelFactory contactEditorViewModelFactory) {

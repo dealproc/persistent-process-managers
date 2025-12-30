@@ -6,7 +6,6 @@ namespace ProcessManagerViewer.Domains.ThisApp;
 
 public static partial class UpdateContactDetailsMsgs {
     public class Start : Command {
-        public readonly Guid UpdateContactDetailsId;
         public readonly Guid ContactId;
         public readonly string FirstName;
         public readonly string LastName;

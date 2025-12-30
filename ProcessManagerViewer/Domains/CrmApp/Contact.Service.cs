@@ -2,8 +2,6 @@ using System;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 
-using Google.Protobuf;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,18 +13,18 @@ using ReactiveDomain.Messaging.Bus;
 namespace ProcessManagerViewer.Domains.CrmApp;
 
 public class ContactService : ReadModelBase, IReactiveDomainService,
-    IHandle<AclRequests.CreateCrmContactReq>,
+    IHandleCommand<AclRequests.CreateCrmContactReq>,
     IHandleCommand<ContactMsgs.CreateContact>,
     IHandle<ContactMsgs.ContactCreated>,
 
-    IHandle<AclRequests.UpdateCrmContactDetailsReq>,
+    IHandleCommand<AclRequests.UpdateCrmContactDetailsReq>,
     IHandleCommand<ContactMsgs.UpdateDetails>,
     IHandle<ContactMsgs.DetailsUpdated>,
 
-    IHandle<AclRequests.ArchiveCrmContactReq>,
+    IHandleCommand<AclRequests.ArchiveCrmContactReq>,
     IHandleCommand<ContactMsgs.ArchiveContact>,
     IHandle<ContactMsgs.Archived> {
-    private readonly ISubscriber _fromExternalApp;
+    private readonly ICommandSubscriber _fromExternalApp;
     private readonly IPublisher _toExternalApp;
     private readonly ICommandSubscriber _commandSubscriber;
     private readonly ICommandPublisher _commandPublisher;
@@ -39,7 +37,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
 
     public ContactService(
         [FromKeyedServices(Keys.ThisApp)]
-        ISubscriber fromExternalApp,
+        ICommandSubscriber fromExternalApp,
         [FromKeyedServices(Keys.ThisApp)]
         IPublisher toExternalApp,
 
@@ -91,26 +89,29 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         _log.LogDebug("{@ServiceName} started.", GetType().Name);
     }
 
-    public void Handle(AclRequests.CreateCrmContactReq message) {
-        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+    public CommandResponse Handle(AclRequests.CreateCrmContactReq command) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
 
-        if (_lookup.TryToFind(message.XrefId, out _)) {
-            var resp = MessageBuilder.From(message)
+        if (_lookup.TryToFind(command.XrefId, out _)) {
+            var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.CreateCrmContactResp(
-                    message.XrefId,
+                    command.XrefId,
                     true));
             _toExternalApp.Publish(resp);
-            return;
+            return command.Succeed();
         }
 
-        var cmd = MessageBuilder.From(message)
+        var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.CreateContact(
                 Guid.NewGuid(),
-                message.XrefId,
-                message.FirstName,
-                message.LastName,
-                message.Email));
-        _commandPublisher.Send(cmd);
+                command.XrefId,
+                command.FirstName,
+                command.LastName,
+                command.Email));
+        var succeeded = _commandPublisher.TrySendAsync(cmd);
+        return succeeded
+            ? command.Succeed()
+            : command.Fail();
     }
 
     public CommandResponse Handle(ContactMsgs.CreateContact command) {
@@ -141,25 +142,28 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         _toExternalApp.Publish(resp);
     }
 
-    public void Handle(AclRequests.UpdateCrmContactDetailsReq message) {
-        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+    public CommandResponse Handle(AclRequests.UpdateCrmContactDetailsReq command) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
 
-        if (!_lookup.TryToFind(message.XrefId, out var contactId)) {
-            var resp = MessageBuilder.From(message)
+        if (!_lookup.TryToFind(command.XrefId, out var contactId)) {
+            var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.UpdateCrmContactDetailsResp(
-                    message.XrefId,
+                    command.XrefId,
                     false));
-            return;
+            return command.Succeed();
         }
 
-        var cmd = MessageBuilder.From(message)
+        var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.UpdateDetails(
                 contactId,
-                message.FirstName,
-                message.LastName,
-                message.Email));
+                command.FirstName,
+                command.LastName,
+                command.Email));
 
-        _commandPublisher.Send(cmd);
+        var succeeded = _commandPublisher.TrySendAsync(cmd);
+        return succeeded
+            ? command.Succeed()
+            : command.Fail();
     }
 
     public CommandResponse Handle(ContactMsgs.UpdateDetails command) {
@@ -200,21 +204,25 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         _toExternalApp.Publish(resp);
     }
 
-    public void Handle(AclRequests.ArchiveCrmContactReq message) {
-        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
+    public CommandResponse Handle(AclRequests.ArchiveCrmContactReq command) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
 
-        if (!_lookup.TryToFind(message.XrefId, out var contactId)) {
-            var resp = MessageBuilder.From(message)
+        if (!_lookup.TryToFind(command.XrefId, out var contactId)) {
+            var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.ArchiveCrmContactResp(
-                    message.XrefId,
+                    command.XrefId,
                     false));
-            return;
+            return command.Succeed();
         }
 
-        var cmd = MessageBuilder.From(message)
+        var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.ArchiveContact(
                 contactId));
-        _commandPublisher.Send(cmd);
+
+        var succeeded = _commandPublisher.TrySendAsync(cmd);
+        return succeeded
+            ? command.Succeed()
+            : command.Fail();
     }
 
     public CommandResponse Handle(ContactMsgs.ArchiveContact command) {

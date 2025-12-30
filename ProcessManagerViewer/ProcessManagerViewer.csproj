@@ -45,4 +45,10 @@
         <Folder Include="Storage\" />
         <Folder Include="ViewModels\ProcessManagersViewModels\" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\CrmAppViews\CrmApplicationView.axaml.cs">
+        <DependentUpon>CrmApplicationView.axaml</DependentUpon>
+      </Compile>
+    </ItemGroup>
 </Project>
