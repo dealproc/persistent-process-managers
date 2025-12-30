@@ -50,5 +50,8 @@
       <Compile Update="Views\CrmAppViews\CrmApplicationView.axaml.cs">
         <DependentUpon>CrmApplicationView.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Views\ErpAppViews\ErpApplicationView.axaml.cs">
+        <DependentUpon>ErpApplicationView.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

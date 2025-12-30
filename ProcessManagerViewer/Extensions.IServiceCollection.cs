@@ -89,6 +89,7 @@ public static class Extensions {
         services.AddReactiveDomainService<Domains.ErpApp.ContactService>();
         services.AddKeyedSingleton<Domains.ErpApp.ContactLookup>(Keys.Erp);
         services.AddSingleton<ViewModels.ErpAppViewModels.IErpApplicationViewModelFactory, ViewModels.ErpAppViewModels.ErpApplicationViewModel.Factory>();
+        services.AddSingleton<ViewModels.ErpAppViewModels.IContactListViewModelFactory, ViewModels.ErpAppViewModels.ContactListViewModel.Factory>();
 
         services.Configure<HostOptions>(x => {
             x.ServicesStartConcurrently = true;

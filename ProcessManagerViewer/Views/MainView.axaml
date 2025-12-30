@@ -39,8 +39,8 @@
                                 Grid.Row="0"
                                 Grid.Column="2"/>
 
-        <eav:ErpAppView DataContext="{Binding ErpApplication}"
-                        Grid.Row="2"
-                        Grid.Column="2"/>
+        <eav:ErpApplicationView DataContext="{Binding ErpApplication}"
+                                Grid.Row="2"
+                                Grid.Column="2"/>
     </Grid>
 </UserControl>
