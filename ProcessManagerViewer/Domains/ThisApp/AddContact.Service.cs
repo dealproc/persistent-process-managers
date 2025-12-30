@@ -55,6 +55,7 @@ public class AddContactService : ReactiveDomainServiceBase,
             command.FirstName,
             command.LastName,
             command.Email,
+            CommandSource.ThisApp,
             command);
         _repository.Save(add);
         return command.Succeed();

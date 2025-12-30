@@ -15,16 +15,32 @@ public class ArchiveContact : PmProcessManager {
         Guid archiveContactId,
         Guid contactId,
         string xrefId,
+        CommandSource source,
         ICorrelatedMessage msg) : base(msg) {
         RegisterEvents();
 
         Raise(new ArchiveContactMsgs.Started(
             archiveContactId,
             contactId));
-        Raise(new AclRequests.ArchiveCrmContactReq(
-            xrefId));
-        Raise(new AclRequests.ArchiveErpContactReq(
-            xrefId));
+
+        Raise(new ContactMsgs.ArchiveContact(
+            contactId));
+
+        if (source == CommandSource.Crm) {
+            Raise(new ArchiveContactMsgs.CrmContactArchived(archiveContactId));
+        } else {
+            Raise(new AclRequests.ArchiveCrmContactReq(
+                xrefId,
+                source));
+        }
+
+        if (source == CommandSource.Erp) {
+            Raise(new ArchiveContactMsgs.ErpContactArchived(archiveContactId));
+        } else {
+            Raise(new AclRequests.ArchiveErpContactReq(
+                xrefId,
+                source));
+        }
     }
 
     public ArchiveContact() : base() {

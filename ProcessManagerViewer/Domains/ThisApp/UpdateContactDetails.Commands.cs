@@ -10,16 +10,19 @@ public static partial class UpdateContactDetailsMsgs {
         public readonly string FirstName;
         public readonly string LastName;
         public readonly string Email;
+        public readonly CommandSource Source;
 
         public Start(
             Guid contactId,
             string firstName,
             string lastName,
-            string email) {
+            string email,
+            CommandSource source) {
             ContactId = contactId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+            Source = source;
         }
     }
 }

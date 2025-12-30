@@ -88,7 +88,8 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
     private async Task ArchiveContact() {
         var cmd = MessageBuilder.New(() => new ArchiveContactMsgs.Start(
             Guid.NewGuid(),
-            SelectedContact!.ContactId));
+            SelectedContact!.ContactId,
+            CommandSource.ThisApp));
 
         if (!_commandPublisher.TrySend(cmd, out var response)) {
             var msg = (response as Fail)?.Exception.Message ?? "Unknown failure. Check logs";

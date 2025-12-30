@@ -77,7 +77,8 @@ public sealed partial class ContactEditorViewModel : ViewModelBase, IContactEdit
                 _contactId,
                 FirstName,
                 LastName,
-                Email)
+                Email,
+                CommandSource.ThisApp)
             : new Domains.ThisApp.AddContactMsgs.Start(
                 _contactId,
                 FirstName,

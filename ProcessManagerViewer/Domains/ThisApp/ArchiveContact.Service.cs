@@ -56,6 +56,7 @@ public class ArchiveContactService : ReactiveDomainServiceBase,
             command.ArchiveContactId,
             command.ContactId,
             xrefId,
+            command.Source,
             command));
 
         return command.Succeed();

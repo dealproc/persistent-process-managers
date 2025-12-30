@@ -66,6 +66,7 @@ public class UpdateContactDetailsService : ReactiveDomainServiceBase,
                 command.FirstName,
                 command.LastName,
                 command.Email,
+                command.Source,
                 command);
             _repository.Save(ucd);
             return command.Succeed();

@@ -18,6 +18,7 @@ public class UpdateContactDetails : PmProcessManager {
         string firstName,
         string lastName,
         string email,
+        CommandSource source,
         ICorrelatedMessage msg) : base(msg) {
         RegisterEvents();
 
@@ -33,16 +34,28 @@ public class UpdateContactDetails : PmProcessManager {
             firstName,
             lastName,
             email));
-        Raise(new AclRequests.UpdateCrmContactDetailsReq(
-            xrefId,
-            firstName,
-            lastName,
-            email));
-        Raise(new AclRequests.UpdateErpContactDetailsReq(
-            xrefId,
-            firstName,
-            lastName,
-            email));
+
+        if (source == CommandSource.Crm) {
+            Raise(new UpdateContactDetailsMsgs.CrmContactDetailsUpdated(updateContactDetailsId));
+        } else {
+            Raise(new AclRequests.UpdateCrmContactDetailsReq(
+                xrefId,
+                firstName,
+                lastName,
+                email,
+                source));
+        }
+
+        if(source == CommandSource.Erp) {
+            Raise(new UpdateContactDetailsMsgs.ErpContactDetailsUpdated(updateContactDetailsId));
+        } else {
+            Raise(new AclRequests.UpdateErpContactDetailsReq(
+                xrefId,
+                firstName,
+                lastName,
+                email,
+                source));
+        }
     }
 
     public UpdateContactDetails() : base() {

@@ -19,6 +19,7 @@ internal class AddContact : PmProcessManager {
         string firstName,
         string lastName,
         string email,
+        CommandSource source,
         ICorrelatedMessage msg) : base(
             msg) {
         RegisterEvents();
@@ -30,22 +31,35 @@ internal class AddContact : PmProcessManager {
             firstName,
             lastName,
             email));
+
         Raise(new ContactMsgs.CreateContact(
             contactId,
             xrefId,
             firstName,
             lastName,
             email));
-        Raise(new AclRequests.CreateCrmContactReq(
-            xrefId,
-            firstName,
-            lastName,
-            email));
-        Raise(new AclRequests.CreateErpContactReq(
-            xrefId,
-            firstName,
-            lastName,
-            email));
+
+        if (source == CommandSource.Crm) {
+            Raise(new AddContactMsgs.CrmContactCreated(addContactId));
+        } else {
+            Raise(new AclRequests.CreateCrmContactReq(
+                xrefId,
+                firstName,
+                lastName,
+                email,
+                source));
+        }
+
+        if (source == CommandSource.Erp) {
+            Raise(new AddContactMsgs.ErpContactCreated(addContactId));
+        } else {
+            Raise(new AclRequests.CreateErpContactReq(
+                xrefId,
+                firstName,
+                lastName,
+                email,
+                source));
+        }
     }
 
     public AddContact() {

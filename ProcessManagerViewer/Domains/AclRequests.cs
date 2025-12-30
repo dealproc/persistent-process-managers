@@ -8,16 +8,19 @@ public static partial class AclRequests {
         public readonly string FirstName;
         public readonly string LastName;
         public readonly string Email;
+        public readonly CommandSource Source;
 
         public CreateCrmContactReq(
             string xrefId,
             string firstName,
             string lastName,
-            string email) {
+            string email,
+            CommandSource source) {
             XrefId = xrefId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+            Source = source;
         }
     }
 
@@ -38,16 +41,19 @@ public static partial class AclRequests {
         public readonly string FirstName;
         public readonly string LastName;
         public readonly string Email;
+        public readonly CommandSource Source;
 
         public CreateErpContactReq(
             string xrefId,
             string firstName,
             string lastName,
-            string email) {
+            string email,
+            CommandSource source) {
             XrefId = xrefId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+            Source = source;
         }
     }
 
@@ -65,10 +71,13 @@ public static partial class AclRequests {
 
     public class ArchiveCrmContactReq : Command {
         public readonly string XrefId;
+        public readonly CommandSource Source;
 
         public ArchiveCrmContactReq(
-            string xrefId) {
+            string xrefId,
+            CommandSource source) {
             XrefId = xrefId;
+            Source = source;
         }
     }
 
@@ -86,10 +95,13 @@ public static partial class AclRequests {
 
     public class ArchiveErpContactReq : Command {
         public readonly string XrefId;
+        public readonly CommandSource Source;
 
         public ArchiveErpContactReq(
-            string xrefId) {
+            string xrefId,
+            CommandSource source) {
             XrefId = xrefId;
+            Source = source;
         }
     }
 
@@ -110,16 +122,19 @@ public static partial class AclRequests {
         public readonly string FirstName;
         public readonly string LastName;
         public readonly string Email;
+        public readonly CommandSource Source;
 
         public UpdateErpContactDetailsReq(
             string xrefId,
             string firstName,
             string lastName,
-            string email) {
+            string email,
+            CommandSource source) {
             XrefId = xrefId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+            Source = source;
         }
     }
 
@@ -140,16 +155,19 @@ public static partial class AclRequests {
         public readonly string FirstName;
         public readonly string LastName;
         public readonly string Email;
+        public readonly CommandSource Source;
 
         public UpdateCrmContactDetailsReq(
             string xrefId,
             string firstName,
             string lastName,
-            string email) {
+            string email,
+            CommandSource source) {
             XrefId = xrefId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
+            Source = source;
         }
     }
 
