@@ -54,7 +54,9 @@ public sealed partial class ContactListViewModel : ViewModelBase, IContactListVi
         _commandPublisher = commandPublisher;
         _contactEditorViewModelFactory = contactEditorViewModelFactory;
         contacts.Connect()
+            .AutoRefresh(x => x.HasBeenArchived)
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Filter(x => !x.HasBeenArchived)
             .Bind(out _contacts)
             .Subscribe().DisposeWith(_d);
 

@@ -31,7 +31,9 @@ public sealed partial class ContactListViewModel : ViewModelBase, IContactListVi
         ContactCollection contacts) {
         HostScreen = hostScreen;
         contacts.Connect()
+            .AutoRefresh(x => x.HasBeenArchived)
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Filter(x => !x.HasBeenArchived)
             .Bind(out _contacts)
             .Subscribe().DisposeWith(_d);
         SelectedContact = null!;
