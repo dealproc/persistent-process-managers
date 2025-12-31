@@ -26,6 +26,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
     IHandle<ContactMsgs.Archived> {
     private readonly ICommandSubscriber _fromExternalApp;
     private readonly IPublisher _toExternalApp;
+    private readonly ICommandPublisher _commandToExternalApp;
     private readonly ICommandSubscriber _commandSubscriber;
     private readonly ICommandPublisher _commandPublisher;
     private readonly ContactLookup _lookup;
@@ -40,6 +41,8 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         ICommandSubscriber fromExternalApp,
         [FromKeyedServices(Keys.ThisApp)]
         IPublisher toExternalApp,
+        [FromKeyedServices(Keys.ThisApp)]
+        ICommandPublisher commandToExternalApp,
 
         [FromKeyedServices(Keys.Crm)]
         ICommandSubscriber commandSubscriber,
@@ -57,6 +60,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
 
         _fromExternalApp = fromExternalApp;
         _toExternalApp = toExternalApp;
+        _commandToExternalApp = commandToExternalApp;
         _commandPublisher = commandPublisher;
         _commandSubscriber = commandSubscriber;
         _lookup = lookup;
@@ -107,7 +111,8 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
                 command.XrefId,
                 command.FirstName,
                 command.LastName,
-                command.Email));
+                command.Email,
+                command.Source));
         var succeeded = _commandPublisher.TrySendAsync(cmd);
         return succeeded
             ? command.Succeed()
@@ -123,6 +128,16 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             command.Email,
             command));
         _lookup.Set(command.XrefId, command.ContactId);
+        if (command.Source == CommandSource.Crm) {
+            var req = MessageBuilder.From(command)
+                .Build(() => new AclRequests.CreateContactReq(
+                    command.XrefId,
+                    command.FirstName,
+                    command.LastName,
+                    command.Email,
+                    command.Source));
+            _commandToExternalApp.TrySendAsync(req);
+        }
         return command.Succeed();
     }
 
@@ -158,7 +173,8 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
                 contactId,
                 command.FirstName,
                 command.LastName,
-                command.Email));
+                command.Email,
+                command.Source));
 
         var succeeded = _commandPublisher.TrySendAsync(cmd);
         return succeeded
@@ -217,7 +233,8 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
 
         var cmd = MessageBuilder.From(command)
             .Build(() => new ContactMsgs.ArchiveContact(
-                contactId));
+                contactId,
+                command.Source));
 
         var succeeded = _commandPublisher.TrySendAsync(cmd);
         return succeeded

@@ -3,6 +3,27 @@ using ReactiveDomain.Messaging;
 namespace ProcessManagerViewer.Domains;
 
 public static partial class AclRequests {
+    public class CreateContactReq : Command {
+        public readonly string XrefId;
+        public readonly string FirstName;
+        public readonly string LastName;
+        public readonly string Email;
+        public readonly CommandSource Source;
+
+        public CreateContactReq(
+            string xrefId,
+            string firstName,
+            string lastName,
+            string email,
+            CommandSource source) {
+            XrefId = xrefId;
+            FirstName = firstName;
+            LastName = lastName;
+            Email = email;
+            Source = source;
+        }
+    }
+
     public class CreateCrmContactReq : Command {
         public readonly string XrefId;
         public readonly string FirstName;
