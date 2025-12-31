@@ -7,7 +7,20 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProcessManagerViewer.Views.CrmAppViews.ContactListView"
              x:DataType="vm:ContactListViewModel">
-    <ListBox ItemsSource="{Binding Contacts}"
-             SelectedItem="{Binding SelectedContact}"
-             ItemTemplate="{StaticResource ContactCard}" />
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Bottom">
+            <StackPanel DockPanel.Dock="Left"></StackPanel>
+            <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal">
+                <Button Content="Edit"
+                        Command="{Binding EditContactCommand}" />
+                <Button Content="New"
+                        Command="{Binding CreateContactCommand}" />
+            </StackPanel>
+            <Panel />
+        </DockPanel>
+        <ListBox ItemsSource="{Binding Contacts}"
+                 SelectedItem="{Binding SelectedContact}"
+                 ItemTemplate="{StaticResource ContactCard}" />
+    </DockPanel>
 </UserControl>

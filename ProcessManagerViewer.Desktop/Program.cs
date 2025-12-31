@@ -18,6 +18,6 @@ collection.AddSingleton<IStreamStoreConnection>((_) => {
 AppBuilder.Configure(() => new App(collection))
     .UsePlatformDetect()
     .WithInterFont()
-    //.LogToTrace()
+    .LogToTrace()
     .UseReactiveUI()
     .StartWithClassicDesktopLifetime(args);

@@ -11,9 +11,11 @@ using ReactiveDomain.Messaging.Bus;
 namespace ProcessManagerViewer.Domains.ThisApp;
 
 public class UpdateContactDetailsService : ReactiveDomainServiceBase,
-    IHandleCommand<UpdateContactDetailsMsgs.Start> {
+    IHandleCommand<UpdateContactDetailsMsgs.Start>,
+    IHandleCommand<AclRequests.UpdateContactDetailsReq> {
     private readonly ICorrelatedRepository _repository;
     private readonly ContactLookup _lookup;
+    private readonly IDispatcher _dispatcher;
     private bool _hasBeenStarted = false;
 
     public UpdateContactDetailsService(
@@ -34,6 +36,7 @@ public class UpdateContactDetailsService : ReactiveDomainServiceBase,
             loggerFactory) {
         _repository = repository;
         _lookup = lookup;
+        _dispatcher = dispatcher;
     }
 
     public override void StartService() {
@@ -47,6 +50,8 @@ public class UpdateContactDetailsService : ReactiveDomainServiceBase,
         Subscribe<UpdateContactDetailsMsgs.Start>(this);
         Subscribe<UpdateContactDetails, AclRequests.UpdateCrmContactDetailsResp>((msg) => Guid.Empty);
         Subscribe<UpdateContactDetails, AclRequests.UpdateErpContactDetailsResp>((msg) => Guid.Empty);
+
+        _dispatcher.Subscribe<AclRequests.UpdateContactDetailsReq>(this);
 
         Log.LogDebug("{@ServiceName} started.", GetType().Name);
     }
@@ -63,6 +68,31 @@ public class UpdateContactDetailsService : ReactiveDomainServiceBase,
                 Guid.NewGuid(),
                 command.ContactId,
                 xref,
+                command.FirstName,
+                command.LastName,
+                command.Email,
+                command.Source,
+                command);
+            _repository.Save(ucd);
+            return command.Succeed();
+        }
+        catch (Exception exc) {
+            return command.Fail(exc);
+        }
+    }
+
+    public CommandResponse Handle(AclRequests.UpdateContactDetailsReq command) {
+        Log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
+        if (!_lookup.TryToLookup(command.XrefId, out var contactId)
+            || contactId == Guid.Empty) {
+            return command.Fail(new InvalidOperationException("Contact xref value could not be found."));
+        }
+
+        try {
+            var ucd = new UpdateContactDetails(
+                Guid.NewGuid(),
+                contactId,
+                command.XrefId,
                 command.FirstName,
                 command.LastName,
                 command.Email,

@@ -22,6 +22,11 @@ public class ContactLookup : ReadModelBase,
         _xrefToInternalId[message.XrefId] = message.ContactId;
     }
 
+    public void SetValues(Guid contactId, string xrefId) {
+        _internalIdToXref[contactId] = xrefId;
+        _xrefToInternalId[xrefId] = contactId;
+    }
+
     public string Lookup(Guid contactId)
         => _internalIdToXref[contactId];
 

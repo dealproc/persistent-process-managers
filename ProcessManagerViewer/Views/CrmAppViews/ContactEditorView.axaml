@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:rxui="http://reactiveui.net"
+             xmlns:vm="using:ProcessManagerViewer.ViewModels.CrmAppViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ProcessManagerViewer.Views.CrmAppViews.ContactEditorView"
+             x:DataType="vm:ContactEditorViewModel">
+    <DockPanel HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch">
+        <StackPanel DockPanel.Dock="Bottom"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand}" />
+            <Button Content="Ok"
+                    Command="{Binding AddOrUpdateCommand}" />
+        </StackPanel>
+
+        <ScrollViewer>
+            <StackPanel Orientation="Vertical"
+                        VerticalAlignment="Top">
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top">
+                    <TextBlock Text="First Name" />
+                    <TextBox Text="{Binding FirstName}"
+                             HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top">
+                    <TextBlock Text="Last Name" />
+                    <TextBox Text="{Binding LastName}"
+                             HorizontalAlignment="Stretch" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top">
+                    <TextBlock Text="Email" />
+                    <TextBox Text="{Binding Email}"
+                             HorizontalAlignment="Stretch" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

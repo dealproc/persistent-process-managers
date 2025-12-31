@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using ProcessManagerViewer.Domains;
 using ProcessManagerViewer.Domains.ThisApp;
 
-using ReactiveDomain.Foundation;
 using ReactiveDomain.Messaging;
 using ReactiveDomain.Messaging.Bus;
 
@@ -58,7 +57,9 @@ public sealed partial class ContactsListViewModel : ViewModelBase, IContactListV
         HostScreen = hostScreen;
         _contactEditorViewModelFactory = contactEditorViewModelFactory;
         contacts.Connect()
+            .AutoRefresh(x => x.HasBeenArchived)
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Filter(x => !x.HasBeenArchived)
             .Bind(out _contacts)
             .Subscribe().DisposeWith(_d);
 

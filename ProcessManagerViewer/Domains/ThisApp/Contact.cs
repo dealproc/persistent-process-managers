@@ -68,6 +68,7 @@ public class Contact : AggregateRoot {
 
     private void Apply(ContactMsgs.ContactCreated msg) {
         Id = msg.ContactId;
+        IsArchived = false;
         _firstName = msg.FirstName;
         _lastName = msg.LastName;
         _email = msg.Email;

@@ -3,6 +3,10 @@ using System.Reactive;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
+
+using ProcessManagerViewer.Domains;
+
 using ReactiveDomain.Messaging;
 using ReactiveDomain.Messaging.Bus;
 
@@ -89,7 +93,9 @@ public sealed partial class ContactEditorViewModel : ViewModelBase, IContactEdit
             return;
         }
 
-        ShowErrorMessage.Handle((response as Fail)?.Exception.Message ?? "Something failed.");
+        await ShowErrorMessage
+            .Handle((response as Fail)?.Exception.Message ?? "Something failed.")
+            .ToTask();
     }
 
     private IObservable<IRoutableViewModel> Cancel(Unit _)
@@ -98,6 +104,20 @@ public sealed partial class ContactEditorViewModel : ViewModelBase, IContactEdit
 
     private void SetPathSegment() {
         UrlPathSegment = $"{nameof(ContactEditorViewModel)}:{_contactId:N}";
+    }
+
+
+    public class Factory : IContactEditorViewModelFactory {
+        private readonly ICommandPublisher _commandPublisher;
+
+        public Factory(
+            [FromKeyedServices(Keys.Crm)]
+            ICommandPublisher commandPublisher) {
+            _commandPublisher = commandPublisher;
+        }
+
+        public IContactEditorViewModel Create(IScreen screen)
+            => new ContactEditorViewModel(_commandPublisher, screen);
     }
 }
 
@@ -113,8 +133,12 @@ public interface IContactEditorViewModel : IRoutableViewModel {
     ReactiveCommand<Unit, IRoutableViewModel> CancelCommand { get; }
 
     Interaction<string, Unit> ShowErrorMessage { get; }
+
+    void Create();
+
+    void Edit(Domains.CrmApp.ContactCollection.ContactDetails contact);
 }
 
 public interface IContactEditorViewModelFactory {
-
+    IContactEditorViewModel Create(IScreen screen);
 }

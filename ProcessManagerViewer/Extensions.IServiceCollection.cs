@@ -79,6 +79,7 @@ public static class Extensions {
         services.AddKeyedSingleton<Domains.CrmApp.ContactLookup>(Keys.Crm);
         services.AddSingleton<ViewModels.CrmAppViewModels.ICrmApplicationViewModelFactory, ViewModels.CrmAppViewModels.CrmApplicationViewModel.Factory>();
         services.AddSingleton<ViewModels.CrmAppViewModels.IContactListViewModelFactory, ViewModels.CrmAppViewModels.ContactListViewModel.Factory>();
+        services.AddSingleton<ViewModels.CrmAppViewModels.IContactEditorViewModelFactory, ViewModels.CrmAppViewModels.ContactEditorViewModel.Factory>();
 
         services.AddKeyedSingleton<IDispatcher>(Keys.Erp, (provider, _) => new Dispatcher($"{Keys.Erp} subsystem."));
         services.AddKeyedSingleton<ISubscriber>(Keys.Erp, (provider, _) => provider.GetRequiredKeyedService<IDispatcher>(Keys.Erp));

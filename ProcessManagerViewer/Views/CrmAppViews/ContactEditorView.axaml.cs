@@ -9,8 +9,8 @@ using ReactiveUI.Avalonia;
 
 namespace ProcessManagerViewer.Views.CrmAppViews;
 
-public partial class ContactListView : ReactiveUserControl<ContactListViewModel> {
-    public ContactListView() {
+public partial class ContactEditorView : ReactiveUserControl<ContactEditorViewModel> {
+    public ContactEditorView() {
         this.WhenActivated(d => {
             ViewModel!.ShowErrorMessage.RegisterHandler((ctx) => {
                 var mb = new MessageBox();

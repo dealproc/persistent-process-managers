@@ -15,15 +15,12 @@ namespace ProcessManagerViewer.Domains.CrmApp;
 public class ContactService : ReadModelBase, IReactiveDomainService,
     IHandleCommand<AclRequests.CreateCrmContactReq>,
     IHandleCommand<ContactMsgs.CreateContact>,
-    IHandle<ContactMsgs.ContactCreated>,
 
     IHandleCommand<AclRequests.UpdateCrmContactDetailsReq>,
     IHandleCommand<ContactMsgs.UpdateDetails>,
-    IHandle<ContactMsgs.DetailsUpdated>,
 
     IHandleCommand<AclRequests.ArchiveCrmContactReq>,
-    IHandleCommand<ContactMsgs.ArchiveContact>,
-    IHandle<ContactMsgs.Archived> {
+    IHandleCommand<ContactMsgs.ArchiveContact> {
     private readonly ICommandSubscriber _fromExternalApp;
     private readonly IPublisher _toExternalApp;
     private readonly ICommandPublisher _commandToExternalApp;
@@ -78,15 +75,12 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
 
         _fromExternalApp.Subscribe<AclRequests.CreateCrmContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.CreateContact>(this).DisposeWith(_disposables);
-        EventStream.Subscribe<ContactMsgs.ContactCreated>(this).DisposeWith(_disposables);
 
         _fromExternalApp.Subscribe<AclRequests.UpdateCrmContactDetailsReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.UpdateDetails>(this).DisposeWith(_disposables);
-        EventStream.Subscribe<ContactMsgs.DetailsUpdated>(this).DisposeWith(_disposables);
 
         _fromExternalApp.Subscribe<AclRequests.ArchiveCrmContactReq>(this).DisposeWith(_disposables);
         _commandSubscriber.Subscribe<ContactMsgs.ArchiveContact>(this).DisposeWith(_disposables);
-        EventStream.Subscribe<ContactMsgs.Archived>(this).DisposeWith(_disposables);
 
         Start<Contact>(checkpoint: long.MaxValue - 1);
 
@@ -120,6 +114,8 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
     }
 
     public CommandResponse Handle(ContactMsgs.CreateContact command) {
+        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
+
         _repository.Save(new Contact(
             command.ContactId,
             command.XrefId,
@@ -129,6 +125,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             command));
         _lookup.Set(command.XrefId, command.ContactId);
         if (command.Source == CommandSource.Crm) {
+            _log.LogTrace("Contact created in CRM, propogate to other systems.");
             var req = MessageBuilder.From(command)
                 .Build(() => new AclRequests.CreateContactReq(
                     command.XrefId,
@@ -137,24 +134,15 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
                     command.Email,
                     command.Source));
             _commandToExternalApp.TrySendAsync(req);
+        } else {
+            _log.LogTrace("Contact created from external command.  Respond with Ok.");
+            var resp = MessageBuilder.From(command)
+                .Build(() => new AclRequests.CreateCrmContactResp(
+                    command.XrefId,
+                    true));
+            _toExternalApp.Publish(resp);
         }
         return command.Succeed();
-    }
-
-    public void Handle(ContactMsgs.ContactCreated message) {
-        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
-
-        if (!_lookup.TryToFind(message.ContactId, out var xrefId) ||
-            xrefId is null) {
-            return;
-        }
-
-        var resp = MessageBuilder.From(message)
-            .Build(() => new AclRequests.CreateCrmContactResp(
-                xrefId,
-                true));
-
-        _toExternalApp.Publish(resp);
     }
 
     public CommandResponse Handle(AclRequests.UpdateCrmContactDetailsReq command) {
@@ -191,7 +179,19 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             command.LastName,
             command.Email);
 
-        if (!contact.HasRecordedEvents) {
+        _repository.Save(contact);
+
+        if (command.Source == CommandSource.Crm) {
+            // we are in-app, so we need to issue update contact req for other systems.
+            var req = MessageBuilder.From(command)
+                .Build(() => new AclRequests.UpdateContactDetailsReq(
+                    _lookup.Lookup(command.ContactId),
+                    command.FirstName,
+                    command.LastName,
+                    command.Email,
+                    command.Source));
+            _commandToExternalApp.TrySendAsync(req);
+        } else {
             var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.UpdateCrmContactDetailsResp(
                     _lookup.Lookup(command.ContactId),
@@ -199,25 +199,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             _toExternalApp.Publish(resp);
         }
 
-        _repository.Save(contact);
-
         return command.Succeed();
-    }
-
-    public void Handle(ContactMsgs.DetailsUpdated message) {
-        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
-
-        if (!_lookup.TryToFind(message.ContactId, out var xrefId) ||
-            xrefId is null) {
-            return;
-        }
-
-        var resp = MessageBuilder.From(message)
-            .Build(() => new AclRequests.UpdateCrmContactDetailsResp(
-                xrefId,
-                true));
-
-        _toExternalApp.Publish(resp);
     }
 
     public CommandResponse Handle(AclRequests.ArchiveCrmContactReq command) {
@@ -248,7 +230,15 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         var contact = _repository.GetById<Contact>(command.ContactId, command);
         contact.Archive();
 
-        if (!contact.HasRecordedEvents) {
+        _repository.Save(contact);
+
+        if (command.Source == CommandSource.Crm) {
+            var req = MessageBuilder.From(command)
+                .Build(() => new AclRequests.ArchiveContactReq(
+                    _lookup.Lookup(command.ContactId),
+                    command.Source));
+            _commandToExternalApp.TrySendAsync(req);
+        } else {
             var resp = MessageBuilder.From(command)
                 .Build(() => new AclRequests.ArchiveCrmContactResp(
                     _lookup.Lookup(command.ContactId),
@@ -256,19 +246,8 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             _toExternalApp.Publish(resp);
         }
 
-        _repository.Save(contact);
 
         return command.Succeed();
-    }
-
-    public void Handle(ContactMsgs.Archived message) {
-        _log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, message.GetType().Name);
-
-        var resp = MessageBuilder.From(message)
-            .Build(() => new AclRequests.ArchiveCrmContactResp(
-                _lookup.Lookup(message.ContactId),
-                true));
-        _toExternalApp.Publish(resp);
     }
 
     protected override void Dispose(bool disposing) {

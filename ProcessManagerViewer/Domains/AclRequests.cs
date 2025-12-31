@@ -90,6 +90,18 @@ public static partial class AclRequests {
         }
     }
 
+    public class ArchiveContactReq : Command {
+        public readonly string XrefId;
+        public readonly CommandSource Source;
+
+        public ArchiveContactReq(
+            string xrefId,
+            CommandSource source) {
+            XrefId = xrefId;
+            Source = source;
+        }
+    }
+
     public class ArchiveCrmContactReq : Command {
         public readonly string XrefId;
         public readonly CommandSource Source;
@@ -135,6 +147,27 @@ public static partial class AclRequests {
             bool isOk) {
             XrefId = xrefId;
             IsOk = isOk;
+        }
+    }
+
+    public class UpdateContactDetailsReq : Command {
+        public readonly string XrefId;
+        public readonly string FirstName;
+        public readonly string LastName;
+        public readonly string Email;
+        public readonly CommandSource Source;
+
+        public UpdateContactDetailsReq(
+            string xrefId,
+            string firstName,
+            string lastName,
+            string email,
+            CommandSource source) {
+            XrefId = xrefId;
+            FirstName = firstName;
+            LastName = lastName;
+            Email = email;
+            Source = source;
         }
     }
 

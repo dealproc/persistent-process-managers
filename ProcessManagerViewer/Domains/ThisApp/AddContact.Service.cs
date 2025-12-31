@@ -11,9 +11,11 @@ using ReactiveDomain.Messaging.Bus;
 namespace ProcessManagerViewer.Domains.ThisApp;
 
 public class AddContactService : ReactiveDomainServiceBase,
-    IHandleCommand<AddContactMsgs.Start> {
+    IHandleCommand<AddContactMsgs.Start>,
+    IHandleCommand<AclRequests.CreateContactReq> {
     private readonly ICorrelatedRepository _repository;
     private readonly ContactLookup _lookup;
+    private readonly IDispatcher _dispatcher;
 
     public AddContactService(
         ICorrelatedRepository repository,
@@ -33,6 +35,7 @@ public class AddContactService : ReactiveDomainServiceBase,
             loggerFactory) {
         _repository = repository;
         _lookup = lookup;
+        _dispatcher = dispatcher;
     }
 
     public override void StartService() {
@@ -42,6 +45,7 @@ public class AddContactService : ReactiveDomainServiceBase,
         Handle<AddContact, Contact, ContactMsgs.ContactCreated>((msg) => _lookup.Lookup(msg.XrefId));
         Subscribe<AddContact, AclRequests.CreateCrmContactResp>((msg) => _lookup.Lookup(msg.XrefId));
         Subscribe<AddContact, AclRequests.CreateErpContactResp>((msg) => _lookup.Lookup(msg.XrefId));
+        _dispatcher.Subscribe<AclRequests.CreateContactReq>(this);
 
         Log.LogDebug("{@ServiceName} started.", GetType().Name);
     }
@@ -56,6 +60,21 @@ public class AddContactService : ReactiveDomainServiceBase,
             command.LastName,
             command.Email,
             CommandSource.ThisApp,
+            command);
+        _repository.Save(add);
+        return command.Succeed();
+    }
+
+    public CommandResponse Handle(AclRequests.CreateContactReq command) {
+        Log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
+        var add = new AddContact(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            command.XrefId,
+            command.FirstName,
+            command.LastName,
+            command.Email,
+            command.Source,
             command);
         _repository.Save(add);
         return command.Succeed();

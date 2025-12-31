@@ -69,6 +69,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
             command.LastName,
             command.Email,
             command);
+        _lookup.SetValues(command.ContactId, command.XrefId);
         _repository.Save(contact);
         return command.Succeed();
     }

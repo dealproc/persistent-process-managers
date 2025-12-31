@@ -1,3 +1,5 @@
+using System.Reactive;
+
 using Avalonia.Markup.Xaml;
 
 using ProcessManagerViewer.ViewModels.ThisAppViewModels;
@@ -17,6 +19,7 @@ public partial class ContactsListView : ReactiveUserControl<ContactsListViewMode
                     Title = "Error"
                 };
                 box.Message.Text = ctx.Input;
+                box.Closed += (sender, args) => ctx.SetOutput(Unit.Default);
                 box.Show();
             });
         });

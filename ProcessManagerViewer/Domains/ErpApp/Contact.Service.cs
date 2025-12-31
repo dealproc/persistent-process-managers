@@ -83,7 +83,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
     public CommandResponse Handle(AclRequests.CreateErpContactReq command) {
         if (_lookup.TryToFind(command.XrefId, out _)) {
             var resp = MessageBuilder.From(command)
-                .Build(() => new AclRequests.CreateCrmContactResp(
+                .Build(() => new AclRequests.CreateErpContactResp(
                     command.XrefId,
                     true));
             _toExternalApp.Publish(resp);
@@ -123,7 +123,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
         }
 
         var resp = MessageBuilder.From(message)
-            .Build(() => new AclRequests.CreateCrmContactResp(
+            .Build(() => new AclRequests.CreateErpContactResp(
                 xrefId,
                 true));
 

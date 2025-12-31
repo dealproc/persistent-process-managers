@@ -11,9 +11,11 @@ using ReactiveDomain.Messaging.Bus;
 namespace ProcessManagerViewer.Domains.ThisApp;
 
 public class ArchiveContactService : ReactiveDomainServiceBase,
-    IHandleCommand<ArchiveContactMsgs.Start> {
+    IHandleCommand<ArchiveContactMsgs.Start>,
+    IHandleCommand<AclRequests.ArchiveContactReq> {
     private readonly ICorrelatedRepository _repository;
     private readonly ContactLookup _lookup;
+    private readonly IDispatcher _dispatcher;
 
     public ArchiveContactService(
         ICorrelatedRepository repository,
@@ -33,6 +35,7 @@ public class ArchiveContactService : ReactiveDomainServiceBase,
             loggerFactory) {
         _lookup = lookup;
         _repository = repository;
+        _dispatcher = dispatcher;
     }
 
     public override void StartService() {
@@ -41,6 +44,7 @@ public class ArchiveContactService : ReactiveDomainServiceBase,
         Subscribe<ArchiveContactMsgs.Start>(this);
         Subscribe<ArchiveContact, AclRequests.ArchiveCrmContactResp>((msg) => _lookup.Lookup(msg.XrefId));
         Subscribe<ArchiveContact, AclRequests.ArchiveErpContactResp>((msg) => _lookup.Lookup(msg.XrefId));
+        _dispatcher.Subscribe<AclRequests.ArchiveContactReq>(this);
 
         Log.LogDebug("{@ServiceName} started.", GetType().Name);
     }
@@ -52,12 +56,37 @@ public class ArchiveContactService : ReactiveDomainServiceBase,
             return command.Fail(new InvalidOperationException("Could not locate cross-reference value(s)."));
         }
 
-        _repository.Save(new ArchiveContact(
+        Log.LogTrace("Archive contact id: {@ArchiveContactId}", command.ArchiveContactId);
+
+        var archive = new ArchiveContact(
             command.ArchiveContactId,
             command.ContactId,
             xrefId,
             command.Source,
-            command));
+            command);
+        Log.LogTrace("Archive contact id before save: {@ArchiveContactId}", archive.Id);
+
+        _repository.Save(archive);
+
+        return command.Succeed();
+    }
+
+    public CommandResponse Handle(AclRequests.ArchiveContactReq command) {
+        Log.LogTrace("Handling {@Class}:{@Method}", GetType().Name, command.GetType().Name);
+        if (!_lookup.TryToLookup(command.XrefId, out var contactId) ||
+            contactId == Guid.Empty) {
+            return command.Fail(new InvalidOperationException("Could not locate cross-reference value(s)."));
+        }
+
+        var archive = new ArchiveContact(
+            Guid.NewGuid(),
+            contactId,
+            command.XrefId,
+            command.Source,
+            command);
+        Log.LogTrace("Archive contact id before save: {@ArchiveContactId}", archive.Id);
+
+        _repository.Save(archive);
 
         return command.Succeed();
     }
