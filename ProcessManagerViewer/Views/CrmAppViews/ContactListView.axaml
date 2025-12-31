@@ -9,7 +9,10 @@
              x:DataType="vm:ContactListViewModel">
     <DockPanel>
         <DockPanel DockPanel.Dock="Bottom">
-            <StackPanel DockPanel.Dock="Left"></StackPanel>
+            <StackPanel DockPanel.Dock="Left">
+                <Button Content="Archive"
+                        Command="{Binding ArchiveContactCommand}" />
+            </StackPanel>
             <StackPanel DockPanel.Dock="Right"
                         Orientation="Horizontal">
                 <Button Content="Edit"
