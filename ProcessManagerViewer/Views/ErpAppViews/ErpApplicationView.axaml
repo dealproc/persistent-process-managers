@@ -8,9 +8,13 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="ProcessManagerViewer.Views.ErpAppViews.ErpApplicationView"
              x:DataType="vm:ErpApplicationViewModel">
+    <DockPanel>
+        <TextBlock Text="SIMPRO"
+                   DockPanel.Dock="Top"/>
     <rxui:RoutedViewHost Router="{Binding Router}">
         <rxui:RoutedViewHost.ViewLocator>
             <local:ViewLocator />
         </rxui:RoutedViewHost.ViewLocator>
     </rxui:RoutedViewHost>
+    </DockPanel>
 </UserControl>
