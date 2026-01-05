@@ -78,13 +78,15 @@ public sealed partial class ContactEditorViewModel : ViewModelBase, IContactEdit
                 _contactId,
                 FirstName,
                 LastName,
-                Email))
+                Email,
+                CommandSource.Erp))
             : MessageBuilder.New(() => new Domains.ErpApp.ContactMsgs.CreateContact(
                 _contactId,
                 Guid.NewGuid().ToString("N"),
                 FirstName,
                 LastName,
-                Email));
+                Email,
+                CommandSource.Erp));
 
         if (_commandPublisher.TrySend(cmd, out var response)) {
             await HostScreen.Router.NavigateBack.Execute().ToTask();

@@ -142,6 +142,7 @@ public class ContactService : ReadModelBase, IReactiveDomainService,
                     true));
             _toExternalApp.Publish(resp);
         }
+
         return command.Succeed();
     }
 
